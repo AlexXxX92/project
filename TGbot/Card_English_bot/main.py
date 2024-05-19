@@ -21,7 +21,7 @@ session = Session()
 
 # drop_tables(engine) УДАЛЕНИЕ ВСЕЙ ТАБЛИЦИ
 create_tables(engine)
-words_add(session)
+words_add(session) #заполнение таблици 10ю первыми словами
 
 state_storage = StateMemoryStorage()
 token_tg = input('Введите токен ТГ бота: ')
