@@ -5,7 +5,7 @@ from datetime import date
 
 today = date.today().strftime('%d.%m.%Y')
 
-token = "6649972886:AAHgZSHS1TGULWazEtkDx7GDaFx6hSi7BoA"
+token = ""
 
 bot = telebot.TeleBot(token)
 
