@@ -19,7 +19,7 @@ engine = sqlalchemy.create_engine(DSN)
 Session = sessionmaker(bind=engine)
 session = Session()
 
-# drop_tables(engine) УДАЛЕНИЕ ВСЕЙ ТАБЛИЦИ
+drop_tables(engine) #УДАЛЕНИЕ ВСЕЙ ТАБЛИЦИ
 create_tables(engine)
 words_add(session) #заполнение таблици 10ю первыми словами
 
@@ -57,11 +57,21 @@ class Cards_DB:
     """ Класс для взаимодействия с БД"""
     def dell_words_db(self):
         '''Удаляет слова у пользователя'''
-        q = session.query(Words).filter(Words.words_eng == self.text.capitalize())
-        for i in q.all():
-            session.query(UsersWords).filter((UsersWords.id_words == i.id) & (UsersWords.id_user == Cards_DB.get_id_u(self))).delete()
+        Cards_DB.add_db_new_user(self)
+        word_eng = Yan.Translator(self)
+        q = (session.query(UsersWords)
+            .filter((UsersWords.id_words == Cards_DB.get_id_word(word_eng[0]))
+                     & (UsersWords.id_user == Cards_DB.get_id_u(self))))
+        if bool(q.all()) == True:
+            q.delete()
             session.commit()
-        return bot.send_message(self.chat.id, f'Слово {self.text.capitalize()} было удаленно из твоего словаря.')
+            return bot.send_message(self.chat.id,
+                                    f'Слово <b>{self.text.capitalize()}</b> было удаленно из твоего словаря.',
+                                    parse_mode='HTML')
+        else:
+            return bot.send_message(self.chat.id,
+                                    f'Слова <b>{self.text.capitalize()}</b> и так нет у вас в словаре.',
+                                     parse_mode='HTML')
 
     def get_id_u(self):
         """Возвращает id юзера"""
@@ -98,6 +108,7 @@ class Cards_DB:
             session.commit()
     def add_db_new_words(self):
         '''Добавляет новые слова пользовыателю при помощи метода класса Yan'''
+        Cards_DB.add_db_new_user(self)
         res = Yan.Translator(self)
         if res != None:
             eng = res[0]
@@ -116,7 +127,8 @@ class Cards_DB:
             else:
                 return bot.send_message(self.chat.id, f'Такое слово уже есть в твоем словаре!')
             count_ = session.query(UsersWords).filter(UsersWords.id_user == Cards_DB.get_id_u(self)).count()
-            return bot.send_message(self.chat.id, f'Слово 🇺🇸<b>{eng}</b> --> 🇷🇺<b>{rus}</b> было добавленно в твой словарь.\
+            return bot.send_message(self.chat.id, f'Слово 🇺🇸<b>{eng}</b> --> 🇷🇺<b>{rus}</b>\
+             было добавленно в твой словарь.\
 Теперь в словаре {count_} слов!', parse_mode='HTML')
 
         else:
@@ -143,14 +155,16 @@ class Telegram:
 
         if bool(Cards_DB.get_id_u(message)) == False:
             Cards_DB.add_db_new_user(message)
-            bot.send_message(message.chat.id, f'Привет 👋 Давай попрактикуемся в английском языке. Тренировки можешь проходить в удобном для себя темпе.\n\
+            bot.send_message(message.chat.id,
+    f'Привет 👋 Давай попрактикуемся в английском языке.Тренировки можешь проходить в удобном для себя темпе.\n\
                              \n\
-    У тебя есть возможность использовать тренажёр, как конструктор, и собирать свою собственную базу для обучения. Для этого воспрользуйся инструментами:\n\
-            \n\
-            добавить слово ➕,\n\
-            удалить слово 🔙.\n\
+У тебя есть возможность использовать тренажёр, как конструктор, и собирать свою собственную базу для обучения\
+. Для этого воспрользуйся инструментами:\n\
+        \n\
+        добавить слово ➕,\n\
+        удалить слово 🔙.\n\
                              \n\
-            Ну что, начнём ⬇️')
+        Ну что, начнём ⬇️')
 
         markup = types.ReplyKeyboardMarkup(row_width=2)
         buttons = []
@@ -211,8 +225,9 @@ class Telegram:
                 buttons.extend([add_word_btn, delete_word_btn, next_btn])
 
                 markup.add(*buttons)
-                bot.send_message(message.chat.id, f'🥳🥳🥳Отлично слово 🇷🇺<b>{translate}</b> --> 🇺🇸<b>{correct}</b>'
-                                     , parse_mode='HTML', reply_markup=markup)
+                bot.send_message(message.chat.id,
+                                 f'🥳🥳🥳Отлично слово 🇷🇺<b>{translate}</b> --> 🇺🇸<b>{correct}</b>',
+                                      parse_mode='HTML', reply_markup=markup)
             else:
                 bot.send_message(message.chat.id, f'❌ попробуйте еще раз вспомнить слово 🇷🇺<b>{translate}</b> ?',
                                      parse_mode='HTML')
