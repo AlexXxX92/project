@@ -19,7 +19,7 @@ engine = sqlalchemy.create_engine(DSN)
 Session = sessionmaker(bind=engine)
 session = Session()
 
-drop_tables(engine) #УДАЛЕНИЕ ВСЕЙ ТАБЛИЦИ
+# drop_tables(engine) #УДАЛЕНИЕ ВСЕЙ ТАБЛИЦИ
 create_tables(engine)
 words_add(session) #заполнение таблици 10ю первыми словами
 
@@ -57,7 +57,6 @@ class Cards_DB:
     """ Класс для взаимодействия с БД"""
     def dell_words_db(self):
         '''Удаляет слова у пользователя'''
-        Cards_DB.add_db_new_user(self)
         word_eng = Yan.Translator(self)
         q = (session.query(UsersWords)
             .filter((UsersWords.id_words == Cards_DB.get_id_word(word_eng[0]))
@@ -108,7 +107,6 @@ class Cards_DB:
             session.commit()
     def add_db_new_words(self):
         '''Добавляет новые слова пользовыателю при помощи метода класса Yan'''
-        Cards_DB.add_db_new_user(self)
         res = Yan.Translator(self)
         if res != None:
             eng = res[0]
